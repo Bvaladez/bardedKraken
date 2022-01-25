@@ -24,6 +24,7 @@
 
 """Kraken.com cryptocurrency Exchange API."""
 
+from logging import raiseExceptions
 import requests
 
 # private query nonce
@@ -96,7 +97,15 @@ class API(object):
 		balance_resp = self.query_private('Balance')
 		balance_result = balance_resp.get('result')
 		asset_balance = balance_result.get(asset)
-		return asset_balance
+		if balance_result != None:
+			if asset_balance != None:
+				return asset_balance
+			# No balance of current currency
+			else:
+				return 0
+		else:
+			raiseExceptions("API call to Balance->Results Failed")
+
 
 	def get_trade_volume(self, pair):
 		volume = self.query_private('TradeVolume', { 'pair':pair} ).get('result')
@@ -105,7 +114,7 @@ class API(object):
 	#
 	####### 
 
-# Return pairs string for ticker call
+	# Return pairs string for ticker call
 	def get_ticker_pairs(self, pairs):
 		if ( type(pairs) == 'list'):
 			res = pairs[0][2]
@@ -116,8 +125,8 @@ class API(object):
 		elif (type(pairs) is dict):
 			return pairs['pair']
 
-# here we use pair and userref to distinguish between orders
-# return txid and order information
+	# here we use pair and userref to distinguish between orders
+	# return txid and order information
 	def get_order(opened, ref, pair0, k):
 			order1 = -1
 			open2 = -1
@@ -133,84 +142,78 @@ class API(object):
 							open2 = open1
 			return order1, open2
 
-# this function places or updates orders
-def check4trade(k, order, pair, buyorsell, vol, price, ref, txid, price_cell,
-							lever, logger, post):
-	trade = -1
-	# if order does not currently exist, we place it. Order size and price is
-	# truncated to meet precesion requirements
-	if order == -1:
-			trade = k.query_private('AddOrder',  {'pair': pair, 'type': buyorsell, 'ordertype': 'limit', 'volume': str(
-					'%.8f' % vol), 'price': str(price), 'userref': ref, 'oflags': post})
-																		#(price_cell % price)
-	else:
-			# if an order currently exists at this price level, we check if it has
-			# to be updated. We use 0.02% price tolerance and 2% size tolerance
-			if abs(1 - float(order.get('descr').get('price')) / float(price)) > 0.0002 or abs(1 - vol / float(order.get('vol'))) > 0.02:
-					close_k = k.query_private('CancelOrder', {'txid': txid})
-					logger.info('close result ' + str(close_k))
-					close_res = -1
-					try:
-							close_res = int(close_k.get('result').get('count'))
-					except:
-							pass
-					if close_res == 1:
-							trade = k.query_private('AddOrder',  {'pair': pair, 'type': buyorsell, 'ordertype': 'limit', 'volume': str(
-									'%.8f' % vol), 'price': str(price), 'userref': ref, 'oflags': post})
-			else:
-					print('Order not changed', txid)
-					logger.info('Order not changed ' + str(txid))
-	return trade
+	# this function places or updates orders
+	def check4trade(self, order, pair, buyorsell, vol, price, ref, txid, price_cell,
+								lever, logger, post):
+		trade = -1
+		# if order does not currently exist, we place it. Order size and price is
+		# truncated to meet precesion requirements
+		if order == -1:
+				trade = self.query_private('AddOrder',  {'pair': pair, 'type': buyorsell, 'ordertype': 'limit', 'volume': str(
+						'%.8f' % vol), 'price': str(price), 'userref': ref, 'oflags': post})
+																			#(price_cell % price)
+		else:
+				# if an order currently exists at this price level, we check if it has
+				# to be updated. We use 0.02% price tolerance and 2% size tolerance
+				if abs(1 - float(order.get('descr').get('price')) / float(price)) > 0.0002 or abs(1 - vol / float(order.get('vol'))) > 0.02:
+						close_k = self.query_private('CancelOrder', {'txid': txid})
+						logger.info('close result ' + str(close_k))
+						close_res = -1
+						try:
+								close_res = int(close_k.get('result').get('count'))
+						except:
+								pass
+						if close_res == 1:
+								trade = self.query_private('AddOrder',  {'pair': pair, 'type': buyorsell, 'ordertype': 'limit', 'volume': str(
+										'%.8f' % vol), 'price': str(price), 'userref': ref, 'oflags': post})
+				else:
+						print('Order not changed', txid)
+						logger.info('Order not changed ' + str(txid))
+		return trade
 
-# Only cancel if order exist (!=-1)
-def check4cancel(k, order, txid):
-	close_k = -1
-	if order != -1:
-			close_k = k.query_private('CancelOrder', {'txid': txid})
-	return close_k
+	# Only cancel if order exist (!=-1)
+	def check4cancel(self, order, txid):
+		close_k = -1
+		if order != -1:
+			close_k = self.query_private('CancelOrder', {'txid': txid})
+		return close_k
 
-# Return Minimum Volume depending on asset
-def get_vol_min(asset):
-		tr = {'USDT': 5, 'USDC': 5}
-		return tr[asset]
-
-
-# Return price precision
-# %.1f = 1 decimal
-def get_price_dec(pair):
+	# Return price precision
+	# %.1f = 1 decimal
+	def get_price_dec(self, pair):
 		res = 1  # USD, EUR to XBT is included here
 		if pair in ['USDTZUSD', 'USDCUSD']:
 				res = 4
 		return '%.' + str(res) + 'f'
 
-# Get ask bid as a tuple
-def get_ask_bid_pair(self, pair, asset_pair):
-	ticker_pair = self.get_ticker_pairs(asset_pair)
-	ticker = self.query_public('Ticker', {'pair': ticker_pair})
-	print(ticker)
-	ask = float(ticker.get('result').get(pair).get('a')[0])
-	bid = float(ticker.get('result').get(pair).get('b')[0])
-	return ask, bid
+	# Get ask bid as a tuple
+	def get_ask_bid_pair(self, pair, asset_pair):
+		ticker_pair = self.get_ticker_pairs(asset_pair)
+		ticker = self.query_public('Ticker', {'pair': ticker_pair})
+		ask = float(ticker.get('result').get(pair).get('a')[0])
+		bid = float(ticker.get('result').get(pair).get('b')[0])
+		return ask, bid
 
-# Get ask
-def get_ask_pair(self, pair):
-	ticker = self.query_public('Ticker', {'pair': pair})
-	ask = ticker.get(pair).get('a')[0]
-	return ask
+	# Get ask
+	def get_ask_pair(self, pair):
+		ticker = self.query_public('Ticker', {'pair': pair})
+		ask = ticker.get(pair).get('a')[0]
+		return ask
 
-# Get Bid
-def get_bid_pair(self, pair):
-	ticker = self.query_public('Ticker', {'pair': pair})
-	bid = ticker.get(pair).get('b')[0]
-	return bid
+	# Get Bid
+	def get_bid_pair(self, pair):
+		ticker = self.query_public('Ticker', {'pair': pair})
+
+		bid = ticker.get(pair).get('b')[0]
+		return bid
 
 
 
-################################################################################# 
-########################     BASE KRAKEN API CALLS     ##########################
-################################################################################# 
+	################################################################################# 
+	########################     BASE KRAKEN API CALLS     ##########################
+	################################################################################# 
 
-def json_options(self, **kwargs):
+	def json_options(self, **kwargs):
 		""" Set keyword arguments to be passed to JSON deserialization.
 
 		:param kwargs: passed to :py:meth:`requests.Response.json`
@@ -220,7 +223,7 @@ def json_options(self, **kwargs):
 		self._json_options = kwargs
 		return self
 
-def close(self):
+	def close(self):
 		""" Close this session.
 
 		:returns: None
@@ -229,7 +232,7 @@ def close(self):
 		self.session.close()
 		return
 
-def load_key(self, path):
+	def load_key(self, path):
 		""" Load key and secret from file.
 
 		Expected file format is key and secret on separate lines.
@@ -244,7 +247,7 @@ def load_key(self, path):
 				self.secret = f.readline().strip()
 		return
 
-def _query(self, urlpath, data, headers=None, timeout=None):
+	def _query(self, urlpath, data, headers=None, timeout=None):
 		""" Low-level query handling.
 
 		.. note::
@@ -281,7 +284,7 @@ def _query(self, urlpath, data, headers=None, timeout=None):
 		return self.response.json(**self._json_options)
 
 
-def query_public(self, method, data=None, timeout=None):
+	def query_public(self, method, data=None, timeout=None):
 		""" Performs an API query that does not require a valid key/secret pair.
 
 		:param method: API method name
@@ -302,7 +305,7 @@ def query_public(self, method, data=None, timeout=None):
 
 		return self._query(urlpath, data, timeout = timeout)
 
-def query_private(self, method, data=None, timeout=None):
+	def query_private(self, method, data=None, timeout=None):
 		""" Performs an API query that requires a valid key/secret pair.
 
 		:param method: API method name
@@ -333,7 +336,7 @@ def query_private(self, method, data=None, timeout=None):
 
 		return self._query(urlpath, data, headers, timeout = timeout)
 
-def _nonce(self):
+	def _nonce(self):
 		""" Nonce counter.
 
 		:returns: an always-increasing unsigned integer (up to 64 bits wide)
@@ -341,7 +344,7 @@ def _nonce(self):
 		"""
 		return int(1000*time.time())
 
-def _sign(self, data, urlpath):
+	def _sign(self, data, urlpath):
 		""" Sign request data according to Kraken's scheme.
 
 		:param data: API request parameters

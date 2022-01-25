@@ -15,11 +15,12 @@ class GMM_BOT(bot.Bot):
 	
 
 	def trade(self, base, quote, pair, order_min, asset_pair):
-		# INIT RUN
+		# Init run
+		# This function currently just verifies user keys/secret
 		self.initRun()
 		orders, balance = self.queryAPI_UserData()
 		self.mRunLogger.handlers.pop()
-		# SCOUT/TRADE
+		#### SCOUT/TRADE ####
 		# start bot logger
 		self.mGMMLogger = logger.setup_logger(pair, pair)
 		self.mGMMLogger.info(
@@ -31,21 +32,16 @@ class GMM_BOT(bot.Bot):
 		print('         Current Balance       ')
 		print(base, base_balance, '|', quote, quote_balance)
 		self.mGMMLogger.info(base + ' ' + str(base_balance) + ' ' + quote + ' ' + str(quote_balance))
-
 		# Leverage value
 		lever = 'none'
-
-		# get minumum trade
-
 		# get Ask and bid 
-		## API cant see inc but inc can see API 
-		ask, bid = self.mAPI.get_ask_bid_pair(self.mAPI, pair, asset_pair)
-
+		ask, bid = self.mAPI.get_ask_bid_pair(pair, asset_pair)
 		# Create grid of buys and sells 
 		sells = []
 		best_sell = 0
 		i = 0
 		best_sell_index = 'No Sell >= ask'
+		# finding the nearest sell in our defined grid
 		for sell in self.mSellLevels:
 			# i[1] the level (Price) to sell at.
 			if (sell[1] <= bid):

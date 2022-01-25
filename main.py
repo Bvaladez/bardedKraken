@@ -56,12 +56,11 @@ def run2(pairs):
 				logger_run2.warning('Balance error ' + str(bal_all.get('error')))
 				bal = k.query_private('Balance').get('result')
 
-		# start trading algorithm for all pairs
+		# Start trading algorithm for all pairs
 		for i in range(len(pairs)):
 				inc2.trade(pairs[i][0], pairs[i][1], pairs[i]
 									 [2], bal, orders, k, ticker['result'])
-
-		# stop the logger
+		# Stop the logger
 		logger_run2.handlers.pop()
 
 
@@ -72,6 +71,7 @@ def run():
 				except Exception as e:
 					print(e)
 				time.sleep(3)
+		return 
 
 def main():
 	while True:
@@ -79,15 +79,15 @@ def main():
 		try:
 			bot =	gmmBot.GMM_BOT(path, active_pair, sell_levels, buy_levels)
 			bot.trade(active_pair['base'], active_pair['quote'], active_pair['pair'], active_pair['order_min'], active_pair)
-			# Our decay time is -.33/sec Trades/cancels add marks
-			time.sleep(3)
+			# Decay time is -.33/sec Trades/cancels add marks
+			time.sleep(.5)
 		except Exception as e:
 			print('main.py', 'exeption thrown on bot initializing or trade function')
-			print("ERROR:")
 			print(e)
 		finally:
-			# SAFEEXIT determines if we close open orders before closing connection to API
+			# SAFEEXIT determines if open orders are before closing connection to API
 			if(SAFEEXIT and bot != None):
+				# TODO: Verify that this function has to be succesful or notification is given
 				bot.handleSafeExit()
 	return
 

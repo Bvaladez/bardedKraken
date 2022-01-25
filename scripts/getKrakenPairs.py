@@ -1,6 +1,6 @@
 #! usr/bin/env python3
 import requests
-import json
+
 PATH = "C:\Bard\KRAKEN\AssetPairs"
 PAIRS = []
 
@@ -19,3 +19,5 @@ for a in assets:
 
 fin = open("AssetPairs", "w")
 fin.writelines(PAIRS)
+fin.close()
+exit(0)
