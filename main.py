@@ -1,13 +1,15 @@
 #! /usr/bin/env python3
 
+# These three includes are only used in our run2 version of running
+# REMOVE AFTER REFACTOR
 import krakenex
 import include as inc
 import include2 as inc2
-import AssetPairs as AP
+
 import config
 import time
 
-import bot as bot 
+import bot
 import grid_market_maker_BOT as gmmBot
 
 from config import sell_levels, buy_levels

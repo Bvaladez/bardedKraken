@@ -1,5 +1,4 @@
-import include as inc
-import AssetPairs as AP
+import logger
 import bot
 
 class GMM_BOT(bot.Bot):
@@ -22,7 +21,7 @@ class GMM_BOT(bot.Bot):
 		self.mRunLogger.handlers.pop()
 		# SCOUT/TRADE
 		# start bot logger
-		self.mGMMLogger = inc.setup_logger(pair, pair)
+		self.mGMMLogger = logger.setup_logger(pair, pair)
 		self.mGMMLogger.info(
 			'------------------------- New case --------------------------------')
 		# Because of rounding errors balance may need to be rounded down 0.1 worth
@@ -40,7 +39,7 @@ class GMM_BOT(bot.Bot):
 
 		# get Ask and bid 
 		## API cant see inc but inc can see API 
-		ask, bid = inc.get_ask_bid_pair(self.mAPI, pair, asset_pair)
+		ask, bid = self.mAPI.get_ask_bid_pair(self.mAPI, pair, asset_pair)
 
 		# Create grid of buys and sells 
 		sells = []

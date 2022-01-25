@@ -1,26 +1,5 @@
-from logging import Logger, log
 import krakenex
-import include as inc
-import include2 as inc2
-import time
-
-### OUT OF PHASE PAIRS ###
-
-# find closely correlated graphs between tickers
-# find the shifting coeficient from base to quote
-# determine buys off significant positive shifts in base
-# determine sells off significatn negative shfits in base
-
-#########
-#IDEAL WORLD SIT:##
-######### 
-''' find function
-of base graph, apply
-translation function to
-graph know where quote 
-is trending '''
-#########
-
+import logger
 
 class Bot:
 
@@ -28,7 +7,7 @@ class Bot:
 		self.mKeyPath = path
 		self.mPairs = pairs
 		self.mAPI = krakenex.API()
-		self.mRunLogger = inc.setup_logger('Bot', 'Bot')
+		self.mRunLogger = logger.setup_logger('Bot', 'Bot')
 
 	def handleSafeExit(self):
 		if ( self.mAPI.get_open_orders() != {} ):
