@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# no vim .swp files
+*.swp
+
+# NO KEYS ON GITHUB
+*.key
