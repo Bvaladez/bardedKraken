@@ -1,5 +1,6 @@
 import logger
 import bot
+import AssetPairs as AP
 
 class GMM_BOT(bot.Bot):
 
@@ -9,8 +10,8 @@ class GMM_BOT(bot.Bot):
 		self.mPair = pair
 		self.mSellLevels = sell_levels
 		self.mBuyLevels = buy_levels
+		self.mGraph = None
 		# Grid consists of buy levels and sell levels
-		self.mGrid = self.mSellLevels.extend(self.mBuyLevels)
 		# TODO: Some API calls should be called in init to eat the free 15 calls we get
 	
 
@@ -28,11 +29,8 @@ class GMM_BOT(bot.Bot):
 		# Because of rounding errors balance may need to be rounded down 0.1 worth
 		base_balance = float(self.mAPI.get_asset_balance(base))
 		quote_balance = float(self.mAPI.get_asset_balance(quote))
-
-		print('         Current Balance       ')
-		print(base, base_balance, '|', quote, quote_balance)
 		self.mGMMLogger.info(base + ' ' + str(base_balance) + ' ' + quote + ' ' + str(quote_balance))
-		# Leverage value
+		# Leverage value: leverage is not used but an option
 		lever = 'none'
 		# get Ask and bid 
 		ask, bid = self.mAPI.get_ask_bid_pair(pair, asset_pair)
@@ -41,7 +39,9 @@ class GMM_BOT(bot.Bot):
 		best_sell = 0
 		i = 0
 		best_sell_index = 'No Sell >= ask'
+
 		# finding the nearest sell in our defined grid
+		#TODO: Duplicate buys and sells being appended to lists each iter ??????
 		for sell in self.mSellLevels:
 			# i[1] the level (Price) to sell at.
 			if (sell[1] <= bid):
@@ -54,6 +54,7 @@ class GMM_BOT(bot.Bot):
 			i += 1
 		self.mGMMLogger.info('sells ' + str(sells))
 
+		### TODO SEE IF CORRECT SELL IS BEING PULLED
 		print("Sells:")
 		print(best_sell)
 		print(best_sell_index)
@@ -78,19 +79,47 @@ class GMM_BOT(bot.Bot):
 			i += 1
 		self.mGMMLogger.info('buys ' + str(buys))
 
+		### TODO SEE IF CORRECT BUY IS BEING PULLED
 		print("Buys:")
 		print(best_buy)
 		print(best_buy_index)
 
+		sells.extend(buys)
+		self.mGraph = sells
+		print(self.mGraph)
+		for price_point in self.mGraph:
+			order1, txid1 = self.mAPI.get_order(orders, i[2], pair)
+			print(order1)
+			print(txid1)
+			self.mGMMLogger.info('txid1 = ' + str (txid1))
 
-
-
-		# For every buy and sell if their price is the same 
-		# as the current price execute order
-
-		
- 
-
+			if price_point[0] >= self.mPair['order_min']:
+				try:
+						# submit following data and place or update order:
+						# ( library instance, order info, pair, direction of order,
+						# size of order, price, userref, txid of existing order,
+						# price precision, leverage, logger instance, oflags )
+						# 
+						res = self.mAPI.check4trade(order1, pair, i[3], i[0],
+						 						i[1], i[2], txid1, self.mGMMLogger, 'post')
+										
+						print(res)
+						self.mGMMLogger.info('traded: ' + str(res))
+				except Exception as e:
+						print('Error occured when ', i[3], pair, e)
+						self.mGMMLogger.warning('Error occured when ' + i[3] + pair + str(e))
+				# cancel existing order if new order size is less than minimum
+			else:
+				res = self.mAPI.check4cancel(order1, txid1)
+				print('Not enough funds to ',
+							i[3], pair, 'or trade vol too small; canceling', res)
+				self.mGMMLogger.info('Not enough funds to ' +
+										str(i[3]) + ' ' + pair +
+										' or trade vol too small; canceling ' + str(res))
+		if res != -1:
+				if 'error' in res and res.get('error') != []:
+						self.mGMMLogger.warning(pair + ' trading error ' + str(res))
+	
 		self.mGMMLogger.handlers.pop()
 		return
 

@@ -127,24 +127,23 @@ class API(object):
 
 	# here we use pair and userref to distinguish between orders
 	# return txid and order information
-	def get_order(opened, ref, pair0, k):
+	def get_order(self, opened_orders, ref, pair):
 			order1 = -1
 			open2 = -1
-			for open1 in opened:
-					if opened.get(open1).get('userref') == ref and \
-									opened.get(open1).get('descr').get('pair') == pair0:
+			for open1 in opened_orders:
+					if opened_orders.get(open1).get('userref') == ref and \
+									opened_orders.get(open1).get('descr').get('pair') == pair:
 							if order1 != -1:
-									close_k = k.query_private('CancelOrder', {'txid': open1})
+									close_k = self.query_private('CancelOrder', {'txid': open1})
 									print("canceled", open1, close_k)
 									time.sleep(1)
 									continue
-							order1 = opened.get(open1)
+							order1 = opened_orders.get(open1)
 							open2 = open1
 			return order1, open2
 
 	# this function places or updates orders
-	def check4trade(self, order, pair, buyorsell, vol, price, ref, txid, price_cell,
-								lever, logger, post):
+	def check4trade(self, order, pair, buyorsell, vol, price, ref, txid, logger, post):
 		trade = -1
 		# if order does not currently exist, we place it. Order size and price is
 		# truncated to meet precesion requirements

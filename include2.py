@@ -67,6 +67,7 @@ def trade(base, quote, pair0, bal, orders, k, ticker):
     for i in sells:
         # get order infor for particular buy/sell level
         order1, txid1 = inc.get_order(orders, i[2], pair0, k)
+        print(order1)
         print(txid1)
         logger.info('txid1 = ' + str(txid1))
         # check for minimum order size and continue

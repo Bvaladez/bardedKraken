@@ -26,7 +26,7 @@ def get_order(opened, ref, pair0, k):
 		open2 = -1
 		for open1 in opened:
 				if opened.get(open1).get('userref') == ref and \
-								opened.get(open1).get('descr').get('pair') == pair0:
+						opened.get(open1).get('descr').get('pair') == pair0:
 						if order1 != -1:
 								close_k = k.query_private('CancelOrder', {'txid': open1})
 								print("canceled", open1, close_k)
