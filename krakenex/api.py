@@ -142,11 +142,14 @@ class API(object):
 							open2 = open1
 			return order1, open2
 
-	# this function places or updates orders
+	# Places or updates orders
 	def check4trade(self, order, pair, buyorsell, vol, price, ref, txid, logger, post):
 		trade = -1
-		# if order does not currently exist, we place it. Order size and price is
-		# truncated to meet precesion requirements
+		'''
+		If order does not currently exist, place it.
+		Order size and price is truncated to meet 
+		precesion requirements
+		'''
 		if order == -1:
 				trade = self.query_private('AddOrder',  {'pair': pair, 'type': buyorsell, 'ordertype': 'limit', 'volume': str(
 						'%.8f' % vol), 'price': str(price), 'userref': ref, 'oflags': post})
