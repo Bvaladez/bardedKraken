@@ -88,26 +88,26 @@ class GMM_BOT(bot.Bot):
 		self.mGraph = sells
 		print(self.mGraph)
 		for price_point in self.mGraph:
-			order1, txid1 = self.mAPI.get_order(orders, i[2], pair)
+			order1, txid1 = self.mAPI.get_order(orders, price_point[2], pair)
 			print(order1)
 			print(txid1)
 			self.mGMMLogger.info('txid1 = ' + str (txid1))
 
-			if price_point[0] >= self.mPair['order_min']:
+			if price_point[0] >= float(self.mPair['order_min']):
 				try:
 						# submit following data and place or update order:
 						# ( library instance, order info, pair, direction of order,
 						# size of order, price, userref, txid of existing order,
 						# price precision, leverage, logger instance, oflags )
 						# 
-						res = self.mAPI.check4trade(order1, pair, i[3], i[0],
-						 						i[1], i[2], txid1, self.mGMMLogger, 'post')
+						res = self.mAPI.check4trade(order1, pair, price_point[3], price_point[0],
+						 						price_point[1], price_point[2], txid1, self.mGMMLogger, 'post')
 										
 						print(res)
 						self.mGMMLogger.info('traded: ' + str(res))
 				except Exception as e:
-						print('Error occured when ', i[3], pair, e)
-						self.mGMMLogger.warning('Error occured when ' + i[3] + pair + str(e))
+						print('Error occured when ', price_point[3], pair, e)
+						self.mGMMLogger.warning('Error occured when ' + price_point[3] + pair + str(e))
 				# cancel existing order if new order size is less than minimum
 			else:
 				res = self.mAPI.check4cancel(order1, txid1)
@@ -116,9 +116,9 @@ class GMM_BOT(bot.Bot):
 				self.mGMMLogger.info('Not enough funds to ' +
 										str(i[3]) + ' ' + pair +
 										' or trade vol too small; canceling ' + str(res))
-		if res != -1:
-				if 'error' in res and res.get('error') != []:
-						self.mGMMLogger.warning(pair + ' trading error ' + str(res))
+			if res != -1:
+					if 'error' in res and res.get('error') != []:
+							self.mGMMLogger.warning(pair + ' trading error ' + str(res))
 	
 		self.mGMMLogger.handlers.pop()
 		return
