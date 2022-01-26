@@ -5,7 +5,7 @@ path_logs = 'logs/'
 
 # pairs is a list if list that defines tradable pairs and assets:
 # [ [ base asset, quote asset, altname from AssetPairs endpoint ], [ ... ] ]
-active_pair =  AP.AAVEETH
+active_pair =  AP.XLMUSD
 pairs = [[active_pair['base'], active_pair['quote'], active_pair['pair']]]
 order_min = float(active_pair['order_min'])
 

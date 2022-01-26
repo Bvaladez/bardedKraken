@@ -68,6 +68,24 @@ SAFEEXIT = config.safeExit
 def main():
 	while True:
 		bot = None
+		try:
+			bot =	gmmBot.GMM_BOT(path, active_pair, sell_levels, buy_levels)
+			bot.trade(active_pair['base'], active_pair['quote'], active_pair['pair'], active_pair['order_min'], active_pair)
+				# Decay time is -.33/sec Trades/cancels add marks
+			time.sleep(3.2)
+		except Exception as e:
+			print('main.py', 'exeption thrown on bot initializing or trade function')
+			print(e)
+		finally:
+			# SAFEEXIT determines if open orders are before closing connection to API
+			if(SAFEEXIT and bot != None):
+			# TODO: Verify that this function has to be succesful or notification is given
+				bot.handleSafeExit()
+		return 0
+
+def test():
+	while True:
+		bot = None
 		#try:
 		bot =	gmmBot.GMM_BOT(path, active_pair, sell_levels, buy_levels)
 		bot.trade(active_pair['base'], active_pair['quote'], active_pair['pair'], active_pair['order_min'], active_pair)
@@ -82,7 +100,6 @@ def main():
 		#		# TODO: Verify that this function has to be succesful or notification is given
 		#		bot.handleSafeExit()
 	return 0
-
 if __name__ == "__main__":
-		#run()
-		main()
+		test()
+		#main()
