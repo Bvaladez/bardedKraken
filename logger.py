@@ -2,12 +2,7 @@ import time
 import logging
 import config
 
-# ---------------- Set up logger for writing logs
-
-
 def setup_logger(name, log_file, level=logging.INFO, add_time='yes'):
-		"""Function setup as many loggers as you want"""
-
 		formatter = logging.Formatter(
 				'%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 		logging.Formatter.converter = time.gmtime
