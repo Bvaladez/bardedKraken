@@ -1,3 +1,4 @@
+from numpy import append
 import logger
 import bot
 import AssetPairs as AP
@@ -10,7 +11,7 @@ class GMM_BOT(bot.Bot):
 		self.mPair = pair
 		self.mSellLevels = sell_levels
 		self.mBuyLevels = buy_levels
-		self.mOrderGrid = None
+		self.mOrderGrid = self.createGrid()
 		# Grid consists of buy levels and sell levels
 		# TODO: Some API calls should be called in init to eat the free 15 calls we get
 
@@ -18,8 +19,27 @@ class GMM_BOT(bot.Bot):
 	# if .10 usd is desired profit buys corresponding sells  should be fee + .10 usd above buy in
 	# volitiility of coin price will decide what the best profit rate should be
 	# Higher profit rates are better but require volitiliy
-	def createGrid(self, dSpread ):
+	def createGrid(self, spread, buyMin, buyMax, sellMin, sellMax, pairfee ):
 		# for temp use fee can be + (0.38).04 usd due to rounding
+
+		buyPoint = buyMin
+		buys = []
+		while ( buyPoint < buyMax ):
+			buys.append(buyPoint)
+			buyPoint += spread
+
+		sellPoint =  sellMin
+		sells = []
+		while (sellPoint < sellMax):
+			sells.append(sellPoint)
+			sellPoint += spread
+
+		print(buys)
+		print(sells)
+
+
+		# sell array from base to max cost stepping by sell spread
+
 		return 
 
 	def trade(self, base, quote, pair, order_min, asset_pair):
