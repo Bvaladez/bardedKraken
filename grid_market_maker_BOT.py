@@ -10,10 +10,17 @@ class GMM_BOT(bot.Bot):
 		self.mPair = pair
 		self.mSellLevels = sell_levels
 		self.mBuyLevels = buy_levels
-		self.mGraph = None
+		self.mOrderGrid = None
 		# Grid consists of buy levels and sell levels
 		# TODO: Some API calls should be called in init to eat the free 15 calls we get
-	
+
+	# profit creates athe spread for the grid
+	# if .10 usd is desired profit buys corresponding sells  should be fee + .10 usd above buy in
+	# volitiility of coin price will decide what the best profit rate should be
+	# Higher profit rates are better but require volitiliy
+	def createGrid(self, dSpread ):
+		# for temp use fee can be + (0.38).04 usd due to rounding
+		return 
 
 	def trade(self, base, quote, pair, order_min, asset_pair):
 		# Init run
@@ -85,9 +92,9 @@ class GMM_BOT(bot.Bot):
 		print(best_buy_index)
 
 		sells.extend(buys)
-		self.mGraph = sells
-		print(self.mGraph)
-		for price_point in self.mGraph:
+		self.mOrderGrid = sells
+		print(self.mOrderGrid)
+		for price_point in self.mOrderGrid:
 			order1, txid1 = self.mAPI.get_order(orders, price_point[2], pair)
 			print(order1)
 			print(txid1)
