@@ -20,22 +20,26 @@ class Bot:
 		self.mAPI.load_key(self.mKeyPath + 'k0.key')
 		return
 
-	# Return orders, balances (formatted for trade call)
-	def queryAPI_UserData(self):
-
+	def queryAPI_allOrders(self):
 		allOrders = self.mAPI.query_private('OpenOrders')
-		allBalances = self.mAPI.query_private('Balance')
-
 		# sanity check: checking OpenOrders result and retry if needed
 		if allOrders.get('error') == []:
 				orders = allOrders.get('result').get('open')
 		else:
 				self.mRunLogger.warning('Order error ' + str(allOrders.get('error')))
 				orders = self.mAPI.query_private('OpenOrders').get('result').get('open')
-		# sanity check: checking Balance result and retry if needed
+
+		return orders
+	
+	# Return orders, balances (formatted for trade call)
+	def queryAPI_balance(self):
+
+		allBalances = self.mAPI.query_private('Balance')
+
+			# sanity check: checking Balance result and retry if needed
 		if allBalances.get('error') == []:
 				balance = allBalances.get('result')
 		else:
 				self.mRunLogger.warning('Balance error ' + str(allBalances.get('error')))
 				balance = self.mAPI.query_private('Balance').get('result')
-		return orders, balance
+		return balance

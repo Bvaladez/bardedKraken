@@ -11,7 +11,7 @@ class GMM_BOT(bot.Bot):
 		self.mPair = pair
 		self.mSellLevels = sell_levels
 		self.mBuyLevels = buy_levels
-		self.mOrderGrid = self.createGrid()
+		#self.mOrderGrid = self.createGrid()
 		# Grid consists of buy levels and sell levels
 		# TODO: Some API calls should be called in init to eat the free 15 calls we get
 
@@ -20,6 +20,8 @@ class GMM_BOT(bot.Bot):
 	# volitiility of coin price will decide what the best profit rate should be
 	# Higher profit rates are better but require volitiliy
 	def createGrid(self, spread, buyMin, buyMax, sellMin, sellMax, pairfee ):
+		if (spread - pairfee) <= 0:
+			print("Chosen spread will not be profitable on trades")
 		# for temp use fee can be + (0.38).04 usd due to rounding
 
 		buyPoint = buyMin
@@ -36,18 +38,14 @@ class GMM_BOT(bot.Bot):
 
 		print(buys)
 		print(sells)
-
-
 		# sell array from base to max cost stepping by sell spread
-
 		return 
 
 	def trade(self, base, quote, pair, order_min, asset_pair):
-		# Init run
-		# This function currently just verifies user keys/secret
 		self.initRun()
-		orders, balance = self.queryAPI_UserData()
 		self.mRunLogger.handlers.pop()
+		orders = self.queryAPI_allOrders()
+
 		#### SCOUT/TRADE ####
 		# start bot logger
 		self.mGMMLogger = logger.setup_logger(pair, pair)
@@ -56,6 +54,7 @@ class GMM_BOT(bot.Bot):
 		# Because of rounding errors balance may need to be rounded down 0.1 worth
 		base_balance = float(self.mAPI.get_asset_balance(base))
 		quote_balance = float(self.mAPI.get_asset_balance(quote))
+
 		self.mGMMLogger.info(base + ' ' + str(base_balance) + ' ' + quote + ' ' + str(quote_balance))
 		# Leverage value: leverage is not used but an option
 		lever = 'none'
@@ -113,13 +112,9 @@ class GMM_BOT(bot.Bot):
 
 		sells.extend(buys)
 		self.mOrderGrid = sells
-		print(self.mOrderGrid)
 		for price_point in self.mOrderGrid:
 			order1, txid1 = self.mAPI.get_order(orders, price_point[2], pair)
-			print(order1)
-			print(txid1)
 			self.mGMMLogger.info('txid1 = ' + str (txid1))
-
 			if price_point[0] >= float(self.mPair['order_min']):
 				try:
 						# submit following data and place or update order:
