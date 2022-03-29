@@ -17,10 +17,9 @@ active_pair = config.active_pair
 SAFEEXIT = config.safeExit
 
 def main():
+	bot =	gmmBot.GMM_BOT(path, active_pair, sell_levels, buy_levels)
 	while True:
-		bot = None
 		try:
-			bot =	gmmBot.GMM_BOT(path, active_pair, sell_levels, buy_levels)
 			bot.trade(active_pair['base'], active_pair['quote'], active_pair['pair'], active_pair['order_min'], active_pair)
 				# Decay time is -.33/sec Trades/cancels add marks
 			time.sleep(3.2)
@@ -31,19 +30,22 @@ def main():
 
 		finally:
 			# SAFEEXIT determines if open orders are before closing connection to API
-			if(SAFEEXIT and bot != None):
+			if(SAFEEXIT):
 			# TODO: Verify that this function has to be succesful or notification is given
 				bot.handleSafeExit()
+			bot.mRunLogger.handlers.pop()
 		return 0
 
 # Crashes on non-crash errors like invalid account balance
 def test():
+	bot =	gmmBot.GMM_BOT(path, active_pair)
 	while True:
-		bot = None
-		bot =	gmmBot.GMM_BOT(path, active_pair, sell_levels, buy_levels)
-		bot.trade(active_pair['base'], active_pair['quote'], "XXLMZUSD", active_pair['order_min'], active_pair)
+		base: str = bot.mBase
+		quote: str = bot.mQuote
+		order_min: float = bot.mPairOrderMin
+		bot.trade(base, quote, active_pair , order_min)
 			# Decay time is -.33/sec Trades/cancels add marks
-		time.sleep(3.2)
+		time.sleep(3)
 	return 0
 
 

@@ -192,8 +192,6 @@ class API(object):
 	def get_ask_bid_pair(self, pair, asset_pair):
 		ticker_pair = self.get_ticker_pairs(asset_pair)
 		ticker = self.query_public('Ticker', {'pair': ticker_pair})
-		print(ticker)
-		print(pair)
 		ask = float(ticker.get('result').get(pair).get('a')[0])
 		bid = float(ticker.get('result').get(pair).get('b')[0])
 		return ask, bid

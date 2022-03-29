@@ -1,5 +1,6 @@
 import krakenex
 import logger
+import user
 
 class Bot:
 
@@ -7,6 +8,7 @@ class Bot:
 		self.mKeyPath = path
 		self.mPairs = pairs
 		self.mAPI = krakenex.API()
+		self.ValidateApiKey()
 		self.mRunLogger = logger.setup_logger('Bot', 'Bot')
 
 	def handleSafeExit(self):
@@ -16,7 +18,7 @@ class Bot:
 		return
 
 	# Verifies key, Returns an instance of kraken API and local logger
-	def initRun(self):
+	def ValidateApiKey(self):
 		self.mAPI.load_key(self.mKeyPath + 'k0.key')
 		return
 
