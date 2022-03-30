@@ -131,8 +131,7 @@ class API(object):
 			order1 = -1
 			open2 = -1
 			for open1 in opened_orders:
-					if opened_orders.get(open1).get('userref') == ref and \
-									opened_orders.get(open1).get('descr').get('pair') == pair:
+					if opened_orders.get(open1).get('userref') == ref and opened_orders.get(open1).get('descr').get('pair') == pair:
 							if order1 != -1:
 									close_k = self.query_private('CancelOrder', {'txid': open1})
 									print("canceled", open1, close_k)
@@ -140,6 +139,11 @@ class API(object):
 									continue
 							order1 = opened_orders.get(open1)
 							open2 = open1
+
+							print("order1")
+							print(order1)
+							print("open2")
+							print(open2)
 			return order1, open2
 
 	# Places or updates orders
@@ -189,24 +193,24 @@ class API(object):
 		return '%.' + str(res) + 'f'
 
 	# Get ask bid as a tuple
-	def get_ask_bid_pair(self, pair, asset_pair):
-		ticker_pair = self.get_ticker_pairs(asset_pair)
+	def get_ask_bid_pair(self, pairName, assetPair):
+		ticker_pair = self.get_ticker_pairs(assetPair)
 		ticker = self.query_public('Ticker', {'pair': ticker_pair})
-		ask = float(ticker.get('result').get(pair).get('a')[0])
-		bid = float(ticker.get('result').get(pair).get('b')[0])
+		ask = float(ticker.get('result').get(pairName).get('a')[0])
+		bid = float(ticker.get('result').get(pairName).get('b')[0])
 		return ask, bid
 
 	# Get ask
-	def get_ask_pair(self, pair):
-		ticker = self.query_public('Ticker', {'pair': pair})
-		ask = ticker.get(pair).get('a')[0]
+	def get_ask_pair(self, pairName: str, tickerPairName: str):
+		ticker = self.query_public('Ticker', {'pair': pairName})
+		print(ticker)
+		ask = ticker.get('result').get(tickerPairName).get('a')[0]
 		return ask
 
 	# Get Bid
-	def get_bid_pair(self, pair):
-		ticker = self.query_public('Ticker', {'pair': pair})
-
-		bid = ticker.get(pair).get('b')[0]
+	def get_bid_pair(self, pairName: str, tickerPairName: str):
+		ticker = self.query_public('Ticker', {'pair': pairName})
+		bid = ticker.get('result').get(tickerPairName).get('b')[0]
 		return bid
 
 

@@ -20,7 +20,7 @@ def main():
 	bot =	gmmBot.GMM_BOT(path, active_pair, sell_levels, buy_levels)
 	while True:
 		try:
-			bot.trade(active_pair['base'], active_pair['quote'], active_pair['pair'], active_pair['order_min'], active_pair)
+			bot.trade(active_pair['base'], active_pair['quote'], active_pair['pair'], active_pair['order_min'])
 				# Decay time is -.33/sec Trades/cancels add marks
 			time.sleep(3.2)
 
@@ -42,8 +42,9 @@ def test():
 	while True:
 		base: str = bot.mBase
 		quote: str = bot.mQuote
-		order_min: float = bot.mPairOrderMin
-		bot.trade(base, quote, active_pair , order_min)
+		pairName: str =  bot.mPairName
+		pairOrderMin: float = bot.mPairOrderMin
+		bot.trade(base, quote, pairName, pairOrderMin)
 			# Decay time is -.33/sec Trades/cancels add marks
 		time.sleep(3)
 	return 0
