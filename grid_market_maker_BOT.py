@@ -17,7 +17,7 @@ class GMM_BOT(bot.Bot):
 
 		# Can be changed during trading
 		self.mTradeVolume = self.mPairOrderMin
-		self.mPairFeePercent: float = 0.16
+		self.mPairFeePercent: float = 0.0026
 		self.mSpread: float = float(bot.user.getUserInput("Spread? (Warning given if spread is not profitable) "))
 		self.mBuyMin: float = float(bot.user.getUserInput("Minimum buy? "))
 		self.mBuyMax: float = float(bot.user.getUserInput("Maximum buy? "))
@@ -30,9 +30,12 @@ class GMM_BOT(bot.Bot):
 		self.quoteBalance = float(self.mAPI.get_asset_balance(pair['quote']))
 
 	def createOrderGrid(self, spread: float, buyMin: float, buyMax: float, sellMin: float, sellMax: float):
+		ask = float(self.mAPI.get_ask_pair(self.mPairName, self.mTickerPairName))
 		# The trade volume needs to be multiplied by the price to check if in range for profitablility
-		if (spread - (float(self.mTradeVolume) * self.mPairFeePercent )) <= 0:
+		profit = (spread - ((float(self.mTradeVolume) * ask) * self.mPairFeePercent) )
+		if (profit) <= 0:
 			print("Chosen spread will not be profitable on trades")
+			print("profitablilty:", profit)
 		buyRef = 1
 		sellRef = 10000
 
@@ -60,8 +63,6 @@ class GMM_BOT(bot.Bot):
 
 
 	def trade(self, base, quote, pairName, order_min):
-		print("pairName")
-		print(pairName)
 		tickerPairName = base+quote
 		orders = self.queryAPI_allOrders()
 
@@ -74,18 +75,10 @@ class GMM_BOT(bot.Bot):
 		self.mGMMLogger.info(base + ' ' + str(self.baseBalance) + ' ' + quote + ' ' + str(self.quoteBalance))
 
 		### TODO SEE IF CORRECT BUY IS BEING PULLED
-		ask = float(self.mAPI.get_ask_pair(pairName, tickerPairName))
-		bid = float(self.mAPI.get_bid_pair(pairName, tickerPairName))
-
-		bestOrderRef: int = -1
-		bestOrder: dict = {}
-
 		for orderToPlace in self.mOrderGrid:
-						
-		
-		
-		
-		
+			# Check if order is on the books if it is get the order and txid if not order1 and txid are -1
+			order1, txid1 = self.mAPI.get_order(orders, orderToPlace['price'], pairName)
+			self.mGMMLogger.info('txid1 = ' + str (txid1))
 			if float(orderToPlace['volume']) >= float(self.mPair['order_min']):
 				try:
 						# submit following data and place or update order:
@@ -94,7 +87,8 @@ class GMM_BOT(bot.Bot):
 						# price precision, leverage, logger instance, oflags )
 						# 
 
-						#res = self.mAPI.check4trade(order1, pair, orderToPlace['buy_sell'], orderToPlace['volume'], orderToPlace['price'], orderToPlace['ref'], txid1, self.mGMMLogger, 'post')
+						res = self.mAPI.check4trade(order1, pairName, orderToPlace['buy_sell'], float(orderToPlace['volume']),
+						 								float(orderToPlace['price']), int(orderToPlace['ref']), txid1, self.mGMMLogger, 'post')
 										
 						self.mGMMLogger.info('traded: ' + str(res))
 				except Exception as e:
@@ -114,37 +108,4 @@ class GMM_BOT(bot.Bot):
 		self.mGMMLogger.handlers.pop()
 		return
 
-
-
-#		for orderToPlace in self.mOrderGrid:
-#			# Find the best suited order at current price then attempt to trade
-#			order1, txid1 = self.mAPI.get_order(orders, orderToPlace['price'], pairName)
-#			self.mGMMLogger.info('txid1 = ' + str (txid1))
-#			if float(orderToPlace['volume']) >= float(self.mPair['order_min']):
-#				try:
-#						# submit following data and place or update order:
-#						# ( library instance, order info, pair, direction of order,
-#						# size of order, price, userref, txid of existing order,
-#						# price precision, leverage, logger instance, oflags )
-#						# 
-#
-#						#res = self.mAPI.check4trade(order1, pair, orderToPlace['buy_sell'], orderToPlace['volume'], orderToPlace['price'], orderToPlace['ref'], txid1, self.mGMMLogger, 'post')
-#										
-#						self.mGMMLogger.info('traded: ' + str(res))
-#				except Exception as e:
-#						print('Error occured when ', orderToPlace['buy_sell'], pairName, e)
-#						self.mGMMLogger.warning('Error occured when ' + orderToPlace['buy_sell'] + pairName + str(e))
-#				# cancel existing order if new order size is less than minimum
-#			else:
-#				res = self.mAPI.check4cancel(order1, txid1)
-#				print('Not enough funds to ', orderToPlace['buy_sell'], pairName, 'or trade vol too small; canceling', res)
-#				self.mGMMLogger.info('Not enough funds to ' +
-#										str(orderToPlace['buy_sell']) + ' ' + pairName +
-#										' or trade vol too small; canceling ' + str(res))
-#			if res != -1:
-#					if 'error' in res and res.get('error') != []:
-#							self.mGMMLogger.warning(pairName + ' trading error ' + str(res))
-#	
-#		self.mGMMLogger.handlers.pop()
-#		return
 

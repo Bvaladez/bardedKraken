@@ -139,11 +139,6 @@ class API(object):
 									continue
 							order1 = opened_orders.get(open1)
 							open2 = open1
-
-							print("order1")
-							print(order1)
-							print("open2")
-							print(open2)
 			return order1, open2
 
 	# Places or updates orders
@@ -203,7 +198,6 @@ class API(object):
 	# Get ask
 	def get_ask_pair(self, pairName: str, tickerPairName: str):
 		ticker = self.query_public('Ticker', {'pair': pairName})
-		print(ticker)
 		ask = ticker.get('result').get(tickerPairName).get('a')[0]
 		return ask
 
